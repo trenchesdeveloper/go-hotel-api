@@ -46,6 +46,15 @@ func main() {
 	// send the user store to the api
 	userHandler := api.NewUserHandler(userStore)
 
+	// create a new mongo hotel store
+	hotelStore := db.NewMongoHotelStore(client)
+
+	roomStore := db.NewMongoRoomStore(client, hotelStore)
+
+	hotelHandler := api.NewHotelHandler(hotelStore, roomStore)
+
+	apiV1.Get("/hotels", hotelHandler.HandleGetHotels)
+
 	apiV1.Get("/users", userHandler.HandleGetUsers)
 
 	apiV1.Get("/user/:id", userHandler.HandleGetUser)
