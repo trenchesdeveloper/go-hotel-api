@@ -14,6 +14,7 @@ import (
 )
 
 const dbURI = "mongodb://localhost:27017"
+const DBNAME = "hotel-reservation"
 
 var config = fiber.Config{
 	// Override default error handler
@@ -43,7 +44,7 @@ func main() {
 	apiV1 := app.Group("/api/v1")
 
 	// create a new mongo user store
-	userStore := db.NewMongoUserStore(client)
+	userStore := db.NewMongoUserStore(client, DBNAME)
 
 	// send the user store to the api
 	userHandler := api.NewUserHandler(userStore)

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"log"
 
 	"github.com/trenchesdeveloper/go-hotel/types"
 	"go.mongodb.org/mongo-driver/bson"
@@ -11,7 +12,12 @@ import (
 
 const USERCOLLECTION = "users"
 
+type Dropper interface {
+	Drop(ctx context.Context) error
+}
+
 type UserStore interface {
+	Dropper
 	GetUserById(ctx context.Context, id string) (*types.User, error)
 	GetUsers(ctx context.Context) ([]*types.User, error)
 	CreateUser(ctx context.Context, user *types.User) (*types.User, error)
@@ -25,11 +31,11 @@ type MongoUserStore struct {
 	collection *mongo.Collection
 }
 
-func NewMongoUserStore(client *mongo.Client) *MongoUserStore {
+func NewMongoUserStore(client *mongo.Client, dbName string) *MongoUserStore {
 	return &MongoUserStore{
 		client:     client,
-		dbName:     DBNAME,
-		collection: client.Database(DBNAME).Collection(USERCOLLECTION),
+		dbName:     dbName,
+		collection: client.Database(dbName).Collection(USERCOLLECTION),
 	}
 }
 
@@ -94,4 +100,9 @@ func (s *MongoUserStore) UpdateUser(ctx context.Context, filter, values bson.M) 
 
 
 	return  nil
+}
+
+func (s *MongoUserStore) Drop(ctx context.Context) error {
+	log.Println("Dropping users collection")
+	return s.collection.Drop(ctx)
 }
