@@ -35,7 +35,7 @@ func NewMongoUserStore(client *mongo.Client, dbName string) *MongoUserStore {
 	return &MongoUserStore{
 		client:     client,
 		dbName:     dbName,
-		collection: client.Database(dbName).Collection(USERCOLLECTION),
+		collection: client.Database(DBNAME).Collection(USERCOLLECTION),
 	}
 }
 
@@ -89,7 +89,7 @@ func (s *MongoUserStore) DeleteUser(ctx context.Context, id string) error {
 	return err
 }
 
-func (s *MongoUserStore) UpdateUser(ctx context.Context, filter, values bson.M)  error {
+func (s *MongoUserStore) UpdateUser(ctx context.Context, filter, values bson.M) error {
 	update := bson.M{
 		"$set": values,
 	}
@@ -98,8 +98,7 @@ func (s *MongoUserStore) UpdateUser(ctx context.Context, filter, values bson.M) 
 		return err
 	}
 
-
-	return  nil
+	return nil
 }
 
 func (s *MongoUserStore) Drop(ctx context.Context) error {

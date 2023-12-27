@@ -13,9 +13,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const dbURI = "mongodb://localhost:27017"
-const DBNAME = "hotel-reservation"
-
 var config = fiber.Config{
 	// Override default error handler
 	ErrorHandler: func(ctx *fiber.Ctx, err error) error {
@@ -26,7 +23,7 @@ var config = fiber.Config{
 }
 
 func main() {
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(dbURI))
+	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(db.DBURI))
 
 	if err != nil {
 		log.Fatal(err)
@@ -44,7 +41,7 @@ func main() {
 	apiV1 := app.Group("/api/v1")
 
 	// create a new mongo user store
-	userStore := db.NewMongoUserStore(client, DBNAME)
+	userStore := db.NewMongoUserStore(client, db.DBNAME)
 
 	// send the user store to the api
 	userHandler := api.NewUserHandler(userStore)
