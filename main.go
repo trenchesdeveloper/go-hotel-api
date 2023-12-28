@@ -43,17 +43,20 @@ func main() {
 		apiV1 = app.Group("/api/v1")
 
 	// create a new mongo user store
-	userStore = db.NewMongoUserStore(client, db.DBNAME)
+	userStore = db.NewMongoUserStore(client)
+	// create a new mongo hotel store
+	hotelStore = db.NewMongoHotelStore(client)
+	roomStore = db.NewMongoRoomStore(client, hotelStore)
 
+	store = &db.Store{
+		UserStore: userStore,
+		HotelStore: hotelStore,
+		RoomStore: roomStore,
+	}
 	// send the user store to the api
 	userHandler = api.NewUserHandler(userStore)
 
-	// create a new mongo hotel store
-	hotelStore = db.NewMongoHotelStore(client)
-
-	roomStore = db.NewMongoRoomStore(client, hotelStore)
-
-	hotelHandler = api.NewHotelHandler(hotelStore, roomStore)
+	hotelHandler = api.NewHotelHandler(store)
 	)
 
 	// user routes

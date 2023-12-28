@@ -13,7 +13,7 @@ type HotelStore interface {
 	CreateHotel(ctx context.Context, hotel *types.Hotel) (*types.Hotel, error)
 	UpdateHotel(ctx context.Context, filter bson.M, update bson.M)  error
 	GetHotels(ctx context.Context, filter bson.M) ([]*types.Hotel, error)
-
+	GetHotelById(ctx context.Context, id primitive.ObjectID) (*types.Hotel, error)
 }
 
 type MongoHotelStore struct{
@@ -59,8 +59,19 @@ func (s *MongoHotelStore) GetHotels(ctx context.Context, filter bson.M) ([]*type
 	return hotels, nil
 }
 
+func (s *MongoHotelStore) GetHotelById(ctx context.Context, id primitive.ObjectID) (*types.Hotel, error) {
+	var hotel types.Hotel
+
+	if err := s.collection.FindOne(ctx, bson.M{"_id": id}).Decode(&hotel); err != nil {
+		return nil, err
+	}
+
+	return &hotel, nil
+}
+
 func (s *MongoHotelStore) UpdateHotel(ctx context.Context, filter bson.M, update bson.M) error {
 	_, err := s.collection.UpdateOne(ctx, filter, update)
 
 	return err
 }
+
