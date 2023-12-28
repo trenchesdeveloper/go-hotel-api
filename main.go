@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/trenchesdeveloper/go-hotel/api"
 	"github.com/trenchesdeveloper/go-hotel/db"
+	"github.com/trenchesdeveloper/go-hotel/routes"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -38,31 +39,30 @@ func main() {
 	flag.Parse()
 	app := fiber.New(config)
 
-	apiV1 := app.Group("/api/v1")
+	var (
+		apiV1 = app.Group("/api/v1")
 
 	// create a new mongo user store
-	userStore := db.NewMongoUserStore(client, db.DBNAME)
+	userStore = db.NewMongoUserStore(client, db.DBNAME)
 
 	// send the user store to the api
-	userHandler := api.NewUserHandler(userStore)
+	userHandler = api.NewUserHandler(userStore)
 
 	// create a new mongo hotel store
-	hotelStore := db.NewMongoHotelStore(client)
+	hotelStore = db.NewMongoHotelStore(client)
 
-	roomStore := db.NewMongoRoomStore(client, hotelStore)
+	roomStore = db.NewMongoRoomStore(client, hotelStore)
 
-	hotelHandler := api.NewHotelHandler(hotelStore, roomStore)
+	hotelHandler = api.NewHotelHandler(hotelStore, roomStore)
+	)
 
-	apiV1.Get("/hotels", hotelHandler.HandleGetHotels)
+	// user routes
+	routes.UserRoutes(apiV1, userHandler)
 
-	apiV1.Get("/users", userHandler.HandleGetUsers)
+	// hotel routes
+	routes.HotelRoutes(apiV1, hotelHandler)
 
-	apiV1.Get("/user/:id", userHandler.HandleGetUser)
 
-	apiV1.Post("/user", userHandler.HandleCreateUser)
-	apiV1.Delete("/user/:id", userHandler.HandleDeleteUser)
-
-	apiV1.Put("/user/:id", userHandler.HandleUpdateUser)
 
 	app.Listen(":" + *PORT)
 }
