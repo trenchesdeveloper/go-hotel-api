@@ -78,6 +78,11 @@ type CreateUserParams struct {
 	Password  string `json:"password"`
 }
 
+type AuthParams struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 type User struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
 	FirstName string             `bson:"firstName" json:"firstName"`

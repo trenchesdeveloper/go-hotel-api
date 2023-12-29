@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/trenchesdeveloper/go-hotel/api"
 	"github.com/trenchesdeveloper/go-hotel/db"
+	"github.com/trenchesdeveloper/go-hotel/middleware"
 	"github.com/trenchesdeveloper/go-hotel/routes"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -39,33 +40,39 @@ func main() {
 	flag.Parse()
 	app := fiber.New(config)
 
+
+
 	var (
-		apiV1 = app.Group("/api/v1")
+		apiV1 = app.Group("/api/v1", middleware.JWTAuthentication)
+		apiV1Auth = app.Group("/api")
 
-	// create a new mongo user store
-	userStore = db.NewMongoUserStore(client)
-	// create a new mongo hotel store
-	hotelStore = db.NewMongoHotelStore(client)
-	roomStore = db.NewMongoRoomStore(client, hotelStore)
 
-	store = &db.Store{
-		UserStore: userStore,
-		HotelStore: hotelStore,
-		RoomStore: roomStore,
-	}
-	// send the user store to the api
-	userHandler = api.NewUserHandler(userStore)
+		// create a new mongo user store
+		userStore = db.NewMongoUserStore(client)
+		// create a new mongo hotel store
+		hotelStore = db.NewMongoHotelStore(client)
+		roomStore  = db.NewMongoRoomStore(client, hotelStore)
 
-	hotelHandler = api.NewHotelHandler(store)
+		store = &db.Store{
+			UserStore:  userStore,
+			HotelStore: hotelStore,
+			RoomStore:  roomStore,
+		}
+		// send the user store to the api
+		userHandler = api.NewUserHandler(userStore)
+
+		authHandler = api.NewAuthHandler(userStore)
+
+		hotelHandler = api.NewHotelHandler(store)
 	)
 
 	// user routes
 	routes.UserRoutes(apiV1, userHandler)
 
+	routes.AuthRoutes(apiV1Auth, authHandler)
+
 	// hotel routes
 	routes.HotelRoutes(apiV1, hotelHandler)
-
-
 
 	app.Listen(":" + *PORT)
 }
