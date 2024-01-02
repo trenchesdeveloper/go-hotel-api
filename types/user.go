@@ -104,3 +104,8 @@ func NewUserFromParams(params CreateUserParams) (*User, error) {
 		Password:  string(hasedPassword),
 	}, nil
 }
+
+func IsValidPassword(hashedpassword, password string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hashedpassword), []byte(password))
+	return err == nil
+}

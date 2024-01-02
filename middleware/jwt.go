@@ -4,50 +4,68 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/trenchesdeveloper/go-hotel/types"
 )
 
-func JWTAuthentication(c *fiber.Ctx) error {
+func AuthRequired(c *fiber.Ctx) error {
 	fmt.Println("jwt middleware", c.GetReqHeaders())
-	tokens, ok := c.GetReqHeaders()["X-Api-Token"]
+	authHeader, ok := c.GetReqHeaders()["Authorization"]
+	log.Println("authHeader", authHeader)
 	if !ok {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "unauthorized",
-		})
+		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized")
 	}
 
-	if err := parseToken(tokens[0]); err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": "unauthorized",
-		})
+	tokenString := authHeader[0]
+
+	log.Println("tokenString", tokenString)
+
+	tokenParts := strings.Split(tokenString, " ")
+
+	if len(tokenParts) != 2 {
+		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized")
 	}
 
-	fmt.Println(tokens)
-	return nil
-}
+	token := tokenParts[1]
 
-func parseToken(tokenString string) error {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	log.Println("token1", token)
+
+	claims := &types.Claims{}
+
+	_, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+		secret := os.Getenv("JWT_SECRET")
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			fmt.Println("Invalid signing method", token.Header["alg"])
 			return nil, fmt.Errorf("unauthorized")
 		}
-
-		secret := os.Getenv("JWT_SECRET")
-
 		return []byte(secret), nil
 	})
+	log.Println("token2", token)
+
 	if err != nil {
-		log.Println("Error parsing token", err)
-		return fmt.Errorf("unauthorized")
+		if strings.HasPrefix(err.Error(), "token is expired") {
+			log.Println("token expired")
+			return fiber.NewError(fiber.StatusUnauthorized, "token expired")
+		}
+		log.Println("token error", err)
+		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized")
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		fmt.Println(claims)
+	log.Println("token3", token)
+
+	jwtIssuer := os.Getenv("JWT_ISSUER")
+
+	if jwtIssuer == "" {
+		jwtIssuer = "go-hotel"
 	}
 
-	return fmt.Errorf("unauthorized")
+	// check the token is valid
+	if claims.Issuer != os.Getenv("JWT_ISSUER"){
+		log.Println("token4", token)
+		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized")
+	}
 
+	return c.Next()
 }

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"log"
 
 	"github.com/trenchesdeveloper/go-hotel/types"
 	"go.mongodb.org/mongo-driver/bson"
@@ -11,13 +12,13 @@ import (
 
 type HotelStore interface {
 	CreateHotel(ctx context.Context, hotel *types.Hotel) (*types.Hotel, error)
-	UpdateHotel(ctx context.Context, filter bson.M, update bson.M)  error
+	UpdateHotel(ctx context.Context, filter bson.M, update bson.M) error
 	GetHotels(ctx context.Context, filter bson.M) ([]*types.Hotel, error)
 	GetHotelById(ctx context.Context, id primitive.ObjectID) (*types.Hotel, error)
 }
 
-type MongoHotelStore struct{
-	client *mongo.Client
+type MongoHotelStore struct {
+	client     *mongo.Client
 	collection *mongo.Collection
 }
 
@@ -25,7 +26,7 @@ const hotelCollection = "hotels"
 
 func NewMongoHotelStore(client *mongo.Client) *MongoHotelStore {
 	return &MongoHotelStore{
-		client: client,
+		client:     client,
 		collection: client.Database(DBNAME).Collection(hotelCollection),
 	}
 }
@@ -45,6 +46,8 @@ func (s *MongoHotelStore) CreateHotel(ctx context.Context, hotel *types.Hotel) (
 
 func (s *MongoHotelStore) GetHotels(ctx context.Context, filter bson.M) ([]*types.Hotel, error) {
 	var hotels []*types.Hotel
+
+	log.Println("getting hotels")
 
 	cursor, err := s.collection.Find(ctx, filter)
 
@@ -74,4 +77,3 @@ func (s *MongoHotelStore) UpdateHotel(ctx context.Context, filter bson.M, update
 
 	return err
 }
-
