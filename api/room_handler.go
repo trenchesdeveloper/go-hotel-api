@@ -1,11 +1,13 @@
 package api
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/trenchesdeveloper/go-hotel/db"
 	"github.com/trenchesdeveloper/go-hotel/types"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -26,6 +28,12 @@ func (h *RoomHandler) HandleBookRoom(c *fiber.Ctx) error {
 		return err
 	}
 
+	if err := params.Validate(); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
 	roomIDParams := c.Params("id")
 	// check if it is a valid object id
 	roomID, err := primitive.ObjectIDFromHex(roomIDParams)
@@ -36,7 +44,6 @@ func (h *RoomHandler) HandleBookRoom(c *fiber.Ctx) error {
 	}
 	userID := c.Locals("userID").(string)
 
-	log.Println("user id", userID)
 	// check if the user exists
 	user, err := h.store.UserStore.GetUserById(c.Context(), userID)
 	if err != nil {
@@ -45,13 +52,33 @@ func (h *RoomHandler) HandleBookRoom(c *fiber.Ctx) error {
 			"error": "unauthorized",
 		})
 	}
-	log.Println("user", user)
-	log.Println("room id", roomID)
+
+	// check if the room is not booked
+	bookings, err := h.store.BookingStore.GetBookings(c.Context(), bson.M{
+		"roomID": roomID,
+		"fromDate": bson.M{
+			"$lte": params.ToDate,
+		},
+		"toDate": bson.M{
+			"$gte": params.FromDate,
+		},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if len(bookings) > 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": fmt.Sprintf("room is not available from %s to %s", params.FromDate, params.ToDate),
+		})
+	}
+
 	booking := types.Booking{
-		UserID: user.ID,
-		RoomID: roomID,
-		FromDate: params.FromDate,
-		ToDate: params.ToDate,
+		UserID:     user.ID,
+		RoomID:     roomID,
+		FromDate:   params.FromDate,
+		ToDate:     params.ToDate,
 		NumPersons: params.NumPersons,
 	}
 
