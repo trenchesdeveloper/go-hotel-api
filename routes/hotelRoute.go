@@ -7,8 +7,8 @@ import (
 )
 
 func HotelRoutes(r fiber.Router, hotelHandler *api.HotelHandler) {
-	r.Use(middleware.AuthRequired)
-	r.Get("/hotel",  hotelHandler.HandleGetHotels)
+
+	r.Get("/hotel", middleware.AuthRequired,  hotelHandler.HandleGetHotels)
 	r.Get("/hotel/:id", hotelHandler.HandleGetHotel)
 
 	r.Get("/hotel/:id/rooms", hotelHandler.HandleGetHotelRooms)

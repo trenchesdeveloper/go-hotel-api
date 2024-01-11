@@ -47,11 +47,13 @@ func main() {
 		// create a new mongo hotel store
 		hotelStore = db.NewMongoHotelStore(client)
 		roomStore  = db.NewMongoRoomStore(client, hotelStore)
+		bookingStore = db.NewMongoBookingStore(client)
 
 		store = &db.Store{
 			UserStore:  userStore,
 			HotelStore: hotelStore,
 			RoomStore:  roomStore,
+			BookingStore: bookingStore,
 		}
 		// send the user store to the api
 		userHandler = api.NewUserHandler(userStore)
@@ -59,6 +61,8 @@ func main() {
 		authHandler = api.NewAuthHandler(userStore)
 
 		hotelHandler = api.NewHotelHandler(store)
+
+		roomHandler = api.NewRoomHandler(store)
 	)
 
 	// user routes
@@ -68,6 +72,9 @@ func main() {
 
 	// hotel routes
 	routes.HotelRoutes(apiV1, hotelHandler)
+
+	// room routes
+	routes.RoomRoutes(apiV1, roomHandler)
 
 	app.Listen(":" + *PORT)
 }

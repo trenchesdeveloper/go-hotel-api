@@ -57,7 +57,10 @@ func (s *MongoUserStore) GetUsers(ctx context.Context) ([]*types.User, error) {
 func (s *MongoUserStore) GetUserById(ctx context.Context, id string) (*types.User, error) {
 	var user types.User
 
+	log.Println("userid", id)
+
 	oid, err := primitive.ObjectIDFromHex(id)
+	log.Println("oid", oid)
 	if err != nil {
 		return nil, err
 	}

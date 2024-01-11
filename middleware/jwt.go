@@ -14,9 +14,10 @@ import (
 func AuthRequired(c *fiber.Ctx) error {
 	fmt.Println("jwt middleware", c.GetReqHeaders())
 	authHeader, ok := c.GetReqHeaders()["Authorization"]
-	log.Println("authHeader", authHeader)
 	if !ok {
-		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized")
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "unauthorized",
+		})
 	}
 
 	tokenString := authHeader[0]
@@ -26,7 +27,9 @@ func AuthRequired(c *fiber.Ctx) error {
 	tokenParts := strings.Split(tokenString, " ")
 
 	if len(tokenParts) != 2 {
-		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized")
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "unauthorized",
+		})
 	}
 
 	token := tokenParts[1]
@@ -42,18 +45,14 @@ func AuthRequired(c *fiber.Ctx) error {
 		}
 		return []byte(secret), nil
 	})
-	log.Println("token2", token)
 
 	if err != nil {
 		if strings.HasPrefix(err.Error(), "token is expired") {
 			log.Println("token expired")
 			return fiber.NewError(fiber.StatusUnauthorized, "token expired")
 		}
-		log.Println("token error", err)
 		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized")
 	}
-
-	log.Println("token3", token)
 
 	jwtIssuer := os.Getenv("JWT_ISSUER")
 
@@ -62,10 +61,23 @@ func AuthRequired(c *fiber.Ctx) error {
 	}
 
 	// check the token is valid
-	if claims.Issuer != os.Getenv("JWT_ISSUER"){
-		log.Println("token4", token)
+	if claims.Issuer != os.Getenv("JWT_ISSUER") {
 		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized")
 	}
+
+	// get the userId from the claims
+	userId := claims.Subject
+
+	if err != nil {
+		log.Println("token5", token)
+		return fiber.NewError(fiber.StatusUnauthorized, "unauthorized")
+	}
+
+	// strip the ObjectId(") from the userId
+	hexId := strings.TrimPrefix(userId, "ObjectID(\"")
+	hexId = strings.TrimSuffix(hexId, "\")")
+	// set the user in the context
+	c.Locals("userID", hexId)
 
 	return c.Next()
 }
