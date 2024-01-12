@@ -63,6 +63,8 @@ func main() {
 		hotelHandler = api.NewHotelHandler(store)
 
 		roomHandler = api.NewRoomHandler(store)
+
+		bookingHandler = api.NewBookingHandler(store)
 	)
 
 	// user routes
@@ -75,6 +77,9 @@ func main() {
 
 	// room routes
 	routes.RoomRoutes(apiV1, roomHandler)
+
+	// booking routes
+	routes.BookingRoutes(apiV1, bookingHandler)
 
 	app.Listen(":" + *PORT)
 }

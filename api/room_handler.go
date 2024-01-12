@@ -89,3 +89,14 @@ func (h *RoomHandler) HandleBookRoom(c *fiber.Ctx) error {
 	}
 	return c.Status(fiber.StatusCreated).JSON(inserted)
 }
+
+
+func (h *RoomHandler) HandleGetRooms(c *fiber.Ctx) error {
+	rooms, err := h.store.RoomStore.GetRooms(c.Context(), nil)
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(rooms)
+}
