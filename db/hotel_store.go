@@ -8,12 +8,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type HotelStore interface {
 	CreateHotel(ctx context.Context, hotel *types.Hotel) (*types.Hotel, error)
 	UpdateHotel(ctx context.Context, filter bson.M, update bson.M) error
-	GetHotels(ctx context.Context, filter bson.M) ([]*types.Hotel, error)
+	GetHotels(ctx context.Context, filter bson.M, page int, pageSize int) ([]*types.Hotel, error)
 	GetHotelById(ctx context.Context, id primitive.ObjectID) (*types.Hotel, error)
 }
 
@@ -43,14 +44,18 @@ func (s *MongoHotelStore) CreateHotel(ctx context.Context, hotel *types.Hotel) (
 	return hotel, nil
 
 }
-
-func (s *MongoHotelStore) GetHotels(ctx context.Context, filter bson.M) ([]*types.Hotel, error) {
+func (s *MongoHotelStore) GetHotels(ctx context.Context, filter bson.M, page int, pageSize int) ([]*types.Hotel, error) {
 	var hotels []*types.Hotel
 
 	log.Println("getting hotels")
 
-	cursor, err := s.collection.Find(ctx, filter)
+	// Calculate the number of documents to skip
+	skip := (page - 1) * pageSize
 
+	// Set up the find options for pagination
+	findOptions := options.Find().SetSkip(int64(skip)).SetLimit(int64(pageSize))
+
+	cursor, err := s.collection.Find(ctx, filter, findOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +66,6 @@ func (s *MongoHotelStore) GetHotels(ctx context.Context, filter bson.M) ([]*type
 
 	return hotels, nil
 }
-
 func (s *MongoHotelStore) GetHotelById(ctx context.Context, id primitive.ObjectID) (*types.Hotel, error) {
 	var hotel types.Hotel
 

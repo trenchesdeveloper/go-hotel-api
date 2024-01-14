@@ -14,7 +14,6 @@ import (
 
 func AuthRequired(store *db.Store) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		fmt.Println("jwt middleware", c.GetReqHeaders())
 		authHeader, ok := c.GetReqHeaders()["Authorization"]
 		if !ok {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -50,7 +49,6 @@ func AuthRequired(store *db.Store) fiber.Handler {
 
 		if err != nil {
 			if strings.HasPrefix(err.Error(), "token is expired") {
-				log.Println("token expired")
 				return fiber.NewError(fiber.StatusUnauthorized, "token expired")
 			}
 			return fiber.NewError(fiber.StatusUnauthorized, "unauthorized")

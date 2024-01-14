@@ -85,6 +85,11 @@ func seedHotel(rating float64, name, location string) {
 func main() {
 	seedHotel(4.5, "Hilton", "New York")
 	seedHotel(4.0, "The commonwealth", "Boston")
+
+	for i := 0; i< 10; i++ {
+		seedHotel(4.0, fmt.Sprintf("Hotel %d", i), fmt.Sprintf("Location %d", i))
+	}
+
 	seedUser("John", "Doe", "john@john.com", "123456")
 }
 

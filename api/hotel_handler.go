@@ -18,12 +18,24 @@ func NewHotelHandler(store *db.Store) *HotelHandler {
 }
 
 func (h *HotelHandler) HandleGetHotels(c *fiber.Ctx) error {
-	hotels, err := h.store.HotelStore.GetHotels(c.Context(), nil)
+	// Read pagination parameters
+	page := c.QueryInt("page", 1) // default page is 1
+	if page < 1 {
+		page = 1
+	}
+
+	limit := c.QueryInt("limit", 4)
+	if limit < 1 {
+		limit = 10
+	}
+
+	// Call the store method with pagination parameters
+	hotels, err := h.store.HotelStore.GetHotels(c.Context(), nil, page, limit)
 	if err != nil {
 		return err
 	}
-	return c.JSON(hotels)
 
+	return c.JSON(hotels)
 }
 
 func (h *HotelHandler) HandleGetHotelRooms(c *fiber.Ctx) error {
@@ -33,9 +45,7 @@ func (h *HotelHandler) HandleGetHotelRooms(c *fiber.Ctx) error {
 	// check if it is a valid object id
 	oid, err := primitive.ObjectIDFromHex(hotelID)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "invalid room id",
-		})
+		return ErrInvalidID()
 	}
 	filter := bson.M{"hotelID": oid}
 

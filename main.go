@@ -17,9 +17,10 @@ import (
 var config = fiber.Config{
 	// Override default error handler
 	ErrorHandler: func(ctx *fiber.Ctx, err error) error {
-		return ctx.JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		if apiError, ok := err.(*api.Error); ok {
+			return ctx.Status(apiError.Code).JSON(apiError)
+		}
+		return api.NewError(fiber.StatusInternalServerError, "Something went wrong")
 	},
 }
 
