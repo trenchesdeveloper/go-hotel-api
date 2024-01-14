@@ -14,6 +14,7 @@ type Booking struct {
 	ToDate     time.Time          `bson:"toDate" json:"toDate"`
 	UserID     primitive.ObjectID `bson:"userID" json:"userID"`
 	NumPersons int                `bson:"numPersons" json:"numPersons"`
+	Canceled   bool               `bson:"canceled" json:"canceled"`
 }
 
 type BookRoomParams struct {

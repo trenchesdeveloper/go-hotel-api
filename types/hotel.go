@@ -26,4 +26,5 @@ type Room struct {
 	SeaSide   bool               `bson:"seaSide" json:"seaSide"`
 	Price     float64            `bson:"price" json:"price"`
 	HotelID   primitive.ObjectID `bson:"hotelID" json:"hotelID"`
+	
 }

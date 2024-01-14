@@ -73,13 +73,13 @@ func main() {
 	routes.AuthRoutes(apiV1, authHandler)
 
 	// hotel routes
-	routes.HotelRoutes(apiV1, hotelHandler)
+	routes.HotelRoutes(apiV1, hotelHandler, store)
 
 	// room routes
-	routes.RoomRoutes(apiV1, roomHandler)
+	routes.RoomRoutes(apiV1, roomHandler, store)
 
 	// booking routes
-	routes.BookingRoutes(apiV1, bookingHandler)
+	routes.BookingRoutes(apiV1, bookingHandler, store)
 
 	app.Listen(":" + *PORT)
 }

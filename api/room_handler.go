@@ -92,6 +92,7 @@ func (h *RoomHandler) HandleBookRoom(c *fiber.Ctx) error {
 
 
 func (h *RoomHandler) HandleGetRooms(c *fiber.Ctx) error {
+	// get rooms that are not booked
 	rooms, err := h.store.RoomStore.GetRooms(c.Context(), nil)
 
 	if err != nil {

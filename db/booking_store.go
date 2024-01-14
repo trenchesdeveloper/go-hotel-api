@@ -13,6 +13,7 @@ type BookingStore interface {
 	CreateBooking(ctx context.Context, room *types.Booking) (*types.Booking, error)
 	GetBookings(ctx context.Context, filter bson.M) ([]*types.Booking, error)
 	GetBookingById(ctx context.Context, id string) (*types.Booking, error)
+	UpdateBooking(ctx context.Context, id string, update bson.M) (*types.Booking, error)
 }
 
 type MongoBookingStore struct {
@@ -69,5 +70,30 @@ func (s *MongoBookingStore) GetBookingById(ctx context.Context, id string) (*typ
 	}
 
 	return booking, nil
+}
+
+func (s *MongoBookingStore) UpdateBooking(ctx context.Context, id string, update bson.M) (*types.Booking, error) {
+	oid , err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := s.collection.UpdateOne(ctx, bson.M{"_id": oid}, update)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.MatchedCount == 0 {
+		return nil, nil
+	}
+
+	booking, err := s.GetBookingById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return booking, nil
+
 }
 
