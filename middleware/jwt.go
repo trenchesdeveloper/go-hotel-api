@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
@@ -23,8 +22,6 @@ func AuthRequired(store *db.Store) fiber.Handler {
 
 		tokenString := authHeader[0]
 
-		log.Println("tokenString", tokenString)
-
 		tokenParts := strings.Split(tokenString, " ")
 
 		if len(tokenParts) != 2 {
@@ -34,8 +31,6 @@ func AuthRequired(store *db.Store) fiber.Handler {
 		}
 
 		token := tokenParts[1]
-
-		log.Println("token1", token)
 
 		claims := &types.Claims{}
 
@@ -69,7 +64,6 @@ func AuthRequired(store *db.Store) fiber.Handler {
 		userId := claims.Subject
 
 		if err != nil {
-			log.Println("token5", token)
 			return fiber.NewError(fiber.StatusUnauthorized, "unauthorized")
 		}
 
