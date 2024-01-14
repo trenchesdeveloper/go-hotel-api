@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/joho/godotenv"
 	"github.com/trenchesdeveloper/go-hotel/api"
 	"github.com/trenchesdeveloper/go-hotel/db"
 	"github.com/trenchesdeveloper/go-hotel/routes"
@@ -26,7 +27,8 @@ var config = fiber.Config{
 }
 
 func main() {
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(db.DBURI))
+	mongoEndpoint := os.Getenv(("DBURI"))
+	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(mongoEndpoint))
 
 	if err != nil {
 		log.Fatal(err)
@@ -45,14 +47,14 @@ func main() {
 		// create a new mongo user store
 		userStore = db.NewMongoUserStore(client)
 		// create a new mongo hotel store
-		hotelStore = db.NewMongoHotelStore(client)
-		roomStore  = db.NewMongoRoomStore(client, hotelStore)
+		hotelStore   = db.NewMongoHotelStore(client)
+		roomStore    = db.NewMongoRoomStore(client, hotelStore)
 		bookingStore = db.NewMongoBookingStore(client)
 
 		store = &db.Store{
-			UserStore:  userStore,
-			HotelStore: hotelStore,
-			RoomStore:  roomStore,
+			UserStore:    userStore,
+			HotelStore:   hotelStore,
+			RoomStore:    roomStore,
 			BookingStore: bookingStore,
 		}
 		// send the user store to the api
@@ -84,4 +86,13 @@ func main() {
 	PORT := os.Getenv("PORT")
 
 	app.Listen(PORT)
+}
+
+func init() {
+	err := godotenv.Load()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }

@@ -29,9 +29,13 @@ go mod download
 
 4. Create a `.env` file in the root directory of the project and add the following environment variables:
 ```sh
-DBURI=<MongoDB connection string>
-DBNAME=<MongoDB database name>
-PORT=<Port number>
+PORT=
+JWT_SECRET=
+JWT_ISSUER=
+JWT_AUDIENCE=
+DBNAME=
+DBURI=
+TESTDBNAME=
 ```
 ```
 

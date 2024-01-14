@@ -7,17 +7,19 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/joho/godotenv"
 	"github.com/trenchesdeveloper/go-hotel/db"
 	"github.com/trenchesdeveloper/go-hotel/types"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const testdbURI = "mongodb://localhost:27017"
-const dbName = "hotel-reservation-test"
+var testdbURI = os.Getenv("DBURI")
+var dbName = os.Getenv("TESTDBNAME")
 
 type responseStruct struct {
 	Message string     `json:"message"`
@@ -98,6 +100,15 @@ func TestCreateUser(t *testing.T) {
 
 	if response.User.Email != params.Email {
 		t.Errorf("Expected email %s; got %s", params.Email, response.User.Email)
+	}
+
+}
+
+func init() {
+	err := godotenv.Load("../../.env")
+
+	if err != nil {
+		log.Fatal(err)
 	}
 
 }

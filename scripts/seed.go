@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/trenchesdeveloper/go-hotel/db"
 	"github.com/trenchesdeveloper/go-hotel/types"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -86,7 +88,7 @@ func main() {
 	seedHotel(4.5, "Hilton", "New York")
 	seedHotel(4.0, "The commonwealth", "Boston")
 
-	for i := 0; i< 10; i++ {
+	for i := 0; i < 10; i++ {
 		seedHotel(4.0, fmt.Sprintf("Hotel %d", i), fmt.Sprintf("Location %d", i))
 	}
 
@@ -95,14 +97,22 @@ func main() {
 
 func init() {
 	var err error
-	client, err = mongo.Connect(context.TODO(), options.Client().ApplyURI(db.DBURI))
+	err = godotenv.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
+	mongoEndpoint := os.Getenv(("DBURI"))
+	mongoDatabase := os.Getenv(("DBNAME"))
+	client, err = mongo.Connect(context.TODO(), options.Client().ApplyURI(mongoEndpoint))
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	fmt.Println("Connected to MongoDB!", mongoDatabase)
+
 	// drop database
-	if err = client.Database(db.DBNAME).Drop(ctx); err != nil {
+	if err = client.Database(mongoDatabase).Drop(ctx); err != nil {
 		log.Fatal(err)
 	}
 
