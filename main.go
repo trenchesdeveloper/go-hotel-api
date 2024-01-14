@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/trenchesdeveloper/go-hotel/api"
@@ -34,8 +35,6 @@ func main() {
 	fmt.Println("Connected to MongoDB!")
 
 	fmt.Println(client)
-
-	PORT := flag.String("port", "4000", "port to listen on")
 
 	flag.Parse()
 	app := fiber.New(config)
@@ -82,5 +81,7 @@ func main() {
 	// booking routes
 	routes.BookingRoutes(apiV1, bookingHandler, store)
 
-	app.Listen(":" + *PORT)
+	PORT := os.Getenv("PORT")
+
+	app.Listen(PORT)
 }
