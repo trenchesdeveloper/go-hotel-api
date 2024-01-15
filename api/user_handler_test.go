@@ -18,7 +18,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var testdbURI = os.Getenv("DBURI")
 var dbName = os.Getenv("TESTDBNAME")
 
 type responseStruct struct {
@@ -37,6 +36,7 @@ func (db *testDb) teardown(t *testing.T) {
 }
 
 func setup(t *testing.T) *testDb {
+	var testdbURI = os.Getenv("DBURI")
 	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(testdbURI))
 
 	if err != nil {
@@ -49,6 +49,11 @@ func setup(t *testing.T) *testDb {
 }
 
 func TestCreateUser(t *testing.T) {
+	err := godotenv.Load("../.env")
+
+	if err != nil {
+		log.Fatal(err)
+	}
 	db := setup(t)
 	defer db.teardown(t)
 

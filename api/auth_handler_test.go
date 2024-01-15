@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/joho/godotenv"
 	"github.com/trenchesdeveloper/go-hotel/db"
 	"github.com/trenchesdeveloper/go-hotel/types"
 )
@@ -41,6 +42,10 @@ func InsertTestUser(t *testing.T, userStore db.UserStore) *types.User {
 }
 
 func TestHandleAuthenticate(t *testing.T) {
+	err := godotenv.Load("../.env")
+	if err != nil {
+		log.Fatal(err)
+	}
 	db := setup(t)
 	defer db.teardown(t)
 
